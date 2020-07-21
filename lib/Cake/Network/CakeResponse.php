@@ -452,12 +452,31 @@ class CakeResponse {
  * @return void
  */
 	protected function _setCookies() {
-		foreach ($this->_cookies as $name => $c) {
-			setcookie(
-				$name, $c['value'], $c['expire'], $c['path'],
-				$c['domain'], $c['secure'], $c['httpOnly']
-			);
+		 foreach ($this->_cookies as $name => $c) {
+			$this->_setCookie($name, $c);
 		}
+	}
+
+	protected function _setCookie($name, $values) {
+		$hasOptionSupport = version_compare(PHP_VERSION, '7.3.0') >= 0;
+
+		if ($hasOptionSupport) {
+			$options = array(
+				'expires' => $values['expire'],
+				'path' => $values['path'],
+				'domain' => $values['domain'],
+				'secure' => $values['secure'],
+				'httponly' => $values['httpOnly'],
+				'samesite' => $values['sameSite']
+			);
+			setcookie($name, $values['value'], $options);
+			return;
+		}
+
+		setcookie(
+			$name, $values['value'], $values['expire'], $values['path'],
+			$values['domain'], $values['secure'], $values['httpOnly']
+		);
 	}
 
 /**
@@ -1252,7 +1271,8 @@ class CakeResponse {
 			'path' => '/',
 			'domain' => '',
 			'secure' => false,
-			'httpOnly' => false
+			'httpOnly' => false,
+			'sameSite' => 'Lax'
 		);
 		$options += $defaults;
 
